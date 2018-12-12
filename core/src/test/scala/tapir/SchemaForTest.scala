@@ -64,8 +64,23 @@ class SchemaForTest extends FlatSpec with Matchers {
                                                      List(("h1", SArray(SString)), ("h2", SInteger)),
                                                      List("h1"))
   }
+
+  it should "find schema for trait" in {
+    implicitly[SchemaFor[Animal]].schema shouldBe SObject(
+      SObjectInfo("Animal", "tapir.Animal"),
+      oneOf = List(
+        SObject(SObjectInfo("Dog", "tapir.Dog"), List(("age", SInteger)), List("age")),
+        SObject(SObjectInfo("Cat", "tapir.Cat"), List(("age", SInteger), ("leftLives", SInteger)), List("age", "leftLives"))
+      )
+    )
+  }
+
 }
 
 case class A(f1: String, f2: Int, f3: Option[String])
 case class B(g1: String, g2: A)
 case class C(h1: List[String], h2: Option[Int])
+
+sealed trait Animal
+case class Dog(age: Int) extends Animal
+case class Cat(age: Int, leftLives: Int) extends Animal

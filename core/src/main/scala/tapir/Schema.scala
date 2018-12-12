@@ -26,7 +26,16 @@ object Schema {
   case object SBoolean extends Schema {
     def show: String = "boolean"
   }
-  case class SObject(info: SObjectInfo, fields: Iterable[(String, Schema)], required: Iterable[String]) extends Schema {
+
+//  case class SRef(id:String) extends Schema {
+//    def show: String = "ref"
+//  }
+
+  case class SObject(info: SObjectInfo,
+                     fields: Iterable[(String, Schema)] = None,
+                     required: Iterable[String] = None,
+                     oneOf: Iterable[Schema] = None)
+      extends Schema {
     def show: String = s"object(${fields.map(f => s"${f._1}->${f._2.show}").mkString(",")};required:${required.mkString(",")})"
   }
   case class SArray(element: Schema) extends Schema {
@@ -112,7 +121,13 @@ trait SchemaForMagnoliaDerivation {
   }
 
   def dispatch[T](ctx: SealedTrait[SchemaFor, T]): SchemaFor[T] = {
-    throw new RuntimeException("Sealed trait hierarchies are not yet supported")
+    new SchemaFor[T] {
+      override val schema: Schema = SObject(
+        SObjectInfo(ctx.typeName.short, ctx.typeName.full),
+        oneOf = ctx.subtypes.toList.map(_.typeclass.schema)
+      )
+    }
+
   }
 
   implicit def schemaForCaseClass[T]: SchemaFor[T] = macro Magnolia.gen[T]

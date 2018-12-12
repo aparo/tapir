@@ -1,6 +1,9 @@
 package tapir
 
+import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
+
 import Schema._
+
 import language.experimental.macros
 import magnolia._
 
@@ -36,8 +39,11 @@ object Schema {
 trait SchemaFor[T] {
   def schema: Schema
   def isOptional: Boolean = false
+  def format: Option[String] = None
+  def formatOptions: Option[String] = None
   def show: String = s"schema is $schema"
 }
+
 object SchemaFor extends SchemaForMagnoliaDerivation {
   implicit case object SchemaForString extends SchemaFor[String] {
     override val schema: Schema = SString
@@ -60,6 +66,25 @@ object SchemaFor extends SchemaForMagnoliaDerivation {
   implicit case object SchemaForBoolean extends SchemaFor[Boolean] {
     override val schema: Schema = SBoolean
   }
+
+  // Date time
+  implicit case object SchemaForLocalDate extends SchemaFor[LocalDate] {
+    override val schema: Schema = SString
+    override val format: Option[String] = Some("date")
+  }
+
+  implicit case object SchemaForLocalDateTime extends SchemaFor[LocalDateTime] {
+    override val schema: Schema = SString
+    override val format: Option[String] = Some("date-time")
+  }
+
+  implicit case object SchemaForOffsetDateTime extends SchemaFor[OffsetDateTime] {
+    override val schema: Schema = SString
+    override val format: Option[String] = Some("date-time")
+
+    override val formatOptions: Option[String] = Some("offset")
+  }
+
   implicit def schemaForOption[T: SchemaFor]: SchemaFor[Option[T]] = new SchemaFor[Option[T]] {
     override def schema: Schema = implicitly[SchemaFor[T]].schema
     override def isOptional: Boolean = true

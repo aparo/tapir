@@ -1,5 +1,7 @@
 package tapir
 
+import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
+
 import org.scalatest.{FlatSpec, Matchers}
 import tapir.Schema._
 
@@ -14,6 +16,16 @@ class SchemaForTest extends FlatSpec with Matchers {
     implicitly[SchemaFor[Float]].schema shouldBe SNumber
     implicitly[SchemaFor[Double]].schema shouldBe SNumber
     implicitly[SchemaFor[Boolean]].schema shouldBe SBoolean
+  }
+
+  it should "find schema for java.time" in {
+    implicitly[SchemaFor[LocalDate]].schema shouldBe SString
+    implicitly[SchemaFor[LocalDate]].format shouldBe Some("date")
+    implicitly[SchemaFor[LocalDateTime]].schema shouldBe SString
+    implicitly[SchemaFor[LocalDateTime]].format shouldBe Some("date-time")
+    implicitly[SchemaFor[OffsetDateTime]].schema shouldBe SString
+    implicitly[SchemaFor[OffsetDateTime]].format shouldBe Some("date-time")
+    implicitly[SchemaFor[OffsetDateTime]].formatOptions shouldBe Some("offset")
   }
 
   it should "find schema for optional types" in {

@@ -27,9 +27,9 @@ object Schema {
     def show: String = "boolean"
   }
 
-//  case class SRef(id:String) extends Schema {
-//    def show: String = "ref"
-//  }
+  case class SRef(id: String) extends Schema {
+    def show: String = s"ref$$$id"
+  }
 
   case class SObject(info: SObjectInfo,
                      fields: Iterable[(String, Schema)] = None,
@@ -124,7 +124,7 @@ trait SchemaForMagnoliaDerivation {
     new SchemaFor[T] {
       override val schema: Schema = SObject(
         SObjectInfo(ctx.typeName.short, ctx.typeName.full),
-        oneOf = ctx.subtypes.toList.map(_.typeclass.schema)
+        oneOf = ctx.subtypes.toList.map(t => SRef(t.typeName.full))
       )
     }
 

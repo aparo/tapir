@@ -68,10 +68,14 @@ class SchemaForTest extends FlatSpec with Matchers {
   it should "find schema for trait" in {
     implicitly[SchemaFor[Animal]].schema shouldBe SObject(
       SObjectInfo("Animal", "tapir.Animal"),
-      oneOf = List(
-        SObject(SObjectInfo("Dog", "tapir.Dog"), List(("age", SInteger)), List("age")),
-        SObject(SObjectInfo("Cat", "tapir.Cat"), List(("age", SInteger), ("leftLives", SInteger)), List("age", "leftLives"))
-      )
+      oneOf = List(SRef("tapir.Dog"), SRef("tapir.Cat"))
+    )
+  }
+
+  it should "find schema for recursive trait" in {
+    implicitly[SchemaFor[Tree]].schema shouldBe SObject(
+      SObjectInfo("Tree", "tapir.Tree"),
+      oneOf = List(SRef("tapir.Branch"), SRef("tapir.Leaf"))
     )
   }
 
@@ -84,3 +88,7 @@ case class C(h1: List[String], h2: Option[Int])
 sealed trait Animal
 case class Dog(age: Int) extends Animal
 case class Cat(age: Int, leftLives: Int) extends Animal
+
+sealed trait Tree
+case class Branch(branches: Seq[Branch], leaves: Seq[Leaf]) extends Tree
+case class Leaf(id: Int) extends Tree
